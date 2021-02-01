@@ -1,0 +1,84 @@
+const int increment = 200;
+int periodT = 2000, periodH = 0, periodL = 2000;
+int motorP = 2, motorN = 4;
+bool stateHigh = false;
+bool clockwise = true;
+unsigned long previousmicros = 0;
+unsigned long previousDebounceTime = 0;
+unsigned long debounceDelay = 100;
+
+void setup()
+{
+  pinMode(8, INPUT_PULLUP);
+  pinMode(7, INPUT_PULLUP);
+  pinMode(motorP, OUTPUT);
+  pinMode(motorN, OUTPUT);
+  digitalWrite(motorP, LOW);
+  digitalWrite(motorN,LOW);
+}
+
+void loop()
+{
+  unsigned long currentmicros = micros();
+  if(currentmicros - previousmicros >= periodL){
+    if(stateHigh == false){
+      digitalWrite(motorP, HIGH);
+      digitalWrite(motorN, LOW);
+      stateHigh = true;
+      previousmicros = currentmicros;
+    }
+  }
+  if(currentmicros - previousmicros >= periodH){
+    if(stateHigh == true){
+      digitalWrite(motorP, LOW);
+      digitalWrite(motorN, LOW);
+      stateHigh = false;
+      previousmicros = currentmicros;
+    }
+  }
+  if(debounce(7) == LOW && periodH < periodT){
+  	periodH += increment;
+    periodL = periodT - periodH;
+  }
+  if(debounce(8) == LOW){
+    if(clockwise == true){
+      motorP = 4;
+      motorN = 2;
+      clockwise = false;
+    }
+    else{
+      motorP = 2;
+      motorN = 4;
+      clockwise = true;
+    }
+  }
+}
+
+int debounce(int buttonPin){
+  int reading = digitalRead(buttonPin);
+  
+  if (reading == LOW) {
+    if ((millis() - previousDebounceTime) > debounceDelay) {
+      previousDebounceTime = millis();
+      return LOW;
+    }
+  }
+  return HIGH;
+}
+
+
+
+
+•	Slave Arduino code: 
+
+int readPin = 7;
+
+void setup() {
+  Serial.begin(19200);
+  pinMode(readPin, INPUT);
+}
+
+void loop(){
+  Serial.println(digitalRead(readPin));
+} 
+
